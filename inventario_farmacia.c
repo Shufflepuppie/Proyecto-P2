@@ -1,8 +1,6 @@
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
-
-#define MAX 100
 
 typedef struct {
     char nombre[50];
@@ -10,7 +8,7 @@ typedef struct {
     float precio;
 } Producto;
 
-Producto productos[MAX];
+Producto* productos = NULL;
 int totalProductos = 0;
 
 // Función para validar entrada de enteros positivos
@@ -18,7 +16,7 @@ int obtenerEnteroPositivo() {
     int valor;
     while (1) {
         if (scanf("%d", &valor) != 1 || valor <= 0) {
-            printf("Entrada inválida. Por favor, ingrese un número entero positivo: ");
+            printf("Entrada inválida. Por favor, ingrese una de las opciones: ");
             while (getchar() != '\n'); // Limpiar el buffer
         } else {
             break;
@@ -32,7 +30,7 @@ float obtenerFlotantePositivo() {
     float valor;
     while (1) {
         if (scanf("%f", &valor) != 1 || valor <= 0.0) {
-            printf("Entrada inválida. Por favor, ingrese un número positivo: ");
+            printf("Entrada inválida. Por favor, ingrese una de las opciones: ");
             while (getchar() != '\n'); // Limpiar el buffer
         } else {
             break;
@@ -42,10 +40,7 @@ float obtenerFlotantePositivo() {
 }
 
 void ingresarProducto() {
-    if (totalProductos >= MAX) {
-        printf("El inventario está lleno.\n");
-        return;
-    }
+    productos = realloc(productos, (totalProductos + 1) * sizeof(Producto));
     printf("Ingrese el nombre del producto: ");
     while (getchar() != '\n'); // Limpiar el buffer
     scanf(" %[^\n]", productos[totalProductos].nombre);
@@ -73,14 +68,12 @@ void listarProductos() {
 }
 
 void eliminarProducto() {
-    if (totalProductos == 0) {
-        printf("No hay productos en el inventario para eliminar.\n");
-        return;
-    }
+    int id;
     listarProductos();
+    if (totalProductos == 0) return;
 
     printf("Ingrese el número del producto a eliminar: ");
-    int id = obtenerEnteroPositivo();
+    id = obtenerEnteroPositivo();
     if (id < 1 || id > totalProductos) {
         printf("ID inválido.\n");
         return;
@@ -90,32 +83,30 @@ void eliminarProducto() {
         productos[i] = productos[i + 1];
     }
     totalProductos--;
+    productos = realloc(productos, totalProductos * sizeof(Producto));
     printf("Producto eliminado con éxito.\n");
 }
 
 void editarProducto() {
-    if (totalProductos == 0) {
-        printf("No hay productos en el inventario para editar.\n");
-        return;
-    }
+    int id;
     listarProductos();
+    if (totalProductos == 0) return;
 
     printf("Ingrese el número del producto a editar: ");
-    int id = obtenerEnteroPositivo();
+    id = obtenerEnteroPositivo();
     if (id < 1 || id > totalProductos) {
         printf("ID inválido.\n");
         return;
     }
 
-    printf("Editar producto: %s\n", productos[id - 1].nombre);
     printf("Ingrese el nuevo nombre: ");
     while (getchar() != '\n'); // Limpiar el buffer
     scanf(" %[^\n]", productos[id - 1].nombre);
 
-    printf("Ingrese la nueva cantidad: ");
+    printf("Ingrese la nueva cantidad (entero positivo): ");
     productos[id - 1].cantidad = obtenerEnteroPositivo();
 
-    printf("Ingrese el nuevo precio: ");
+    printf("Ingrese el nuevo precio (número positivo): ");
     productos[id - 1].precio = obtenerFlotantePositivo();
 
     printf("Producto editado con éxito.\n");
@@ -143,5 +134,6 @@ int main() {
         }
     } while (opcion != 5);
 
+    free(productos);  // Liberar memoria dinámica
     return 0;
 }
